@@ -9,6 +9,7 @@ import java.util.*
 data class FriendData(
     val player: UUID,
     val friends: ObjectSet<UUID>  = ObjectArraySet(),
+    val friendNotes:HashMap<UUID,String?> = HashMap(),
     val friendRequests: ObjectSet<UUID> = ObjectArraySet(),
     var allowRequests: Boolean = true
 )

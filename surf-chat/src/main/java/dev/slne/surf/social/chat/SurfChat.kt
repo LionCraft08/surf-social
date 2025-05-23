@@ -2,10 +2,13 @@ package dev.slne.surf.social.chat
 
 import com.github.shynixn.mccoroutine.folia.SuspendingJavaPlugin
 import dev.jorel.commandapi.CommandAPI
+import dev.slne.surf.gui.menu.menu.BookProvider
+import dev.slne.surf.gui.menu.menu.MenuService
 import dev.slne.surf.social.chat.command.*
 import dev.slne.surf.social.chat.command.channel.ChannelCommand
 import dev.slne.surf.social.chat.listener.PlayerAsyncChatListener
 import dev.slne.surf.social.chat.listener.PlayerQuitListener
+import dev.slne.surf.social.chat.menu.ChatIgnoreMenu
 import dev.slne.surf.social.chat.`object`.Message
 import dev.slne.surf.social.chat.permission.SurfChatPermissions
 import dev.slne.surf.social.chat.provider.ConfigurationProvider
@@ -14,7 +17,9 @@ import dev.slne.surf.social.chat.service.ChatFilterService
 import dev.slne.surf.social.chat.service.ChatHistoryService
 import dev.slne.surf.social.chat.service.DatabaseService
 import dev.slne.surf.social.chat.util.MessageBuilder
+import dev.slne.surf.surfapi.core.api.SurfCoreApi
 import dev.slne.surf.surfapi.core.api.messages.Colors
+import dev.slne.surf.surfapi.core.api.util.InternalSurfApi
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
@@ -50,6 +55,8 @@ class SurfChat : SuspendingJavaPlugin() {
         Bukkit.getPluginManager().registerEvents(PlayerQuitListener(), this)
 
         SurfChatPermissions
+
+        MenuService.registerNewMenu("ignore", ChatIgnoreMenu::class.java)
     }
 
     override suspend fun onDisableAsync() {

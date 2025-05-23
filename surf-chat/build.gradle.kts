@@ -1,3 +1,5 @@
+import net.minecrell.pluginyml.paper.PaperPluginDescription
+
 plugins {
     id("dev.slne.surf.surfapi.gradle.paper-plugin")
 }
@@ -20,6 +22,7 @@ group = "dev.slne"
 version = "$newVersion-1.21.4-SNAPSHOT"
 repositories {
     mavenCentral()
+    mavenLocal()
 
     maven {
         name = "papermc"
@@ -38,6 +41,8 @@ repositories {
 
 dependencies {
     compileOnly("me.clip:placeholderapi:2.11.6")
+    //compileOnly(files("run/plugins/surf-gui-bukkit-2.0.3-SNAPSHOT-all.jar"))
+    compileOnly("dev.slne.surf:surf-gui-api:2.0.3-SNAPSHOT")
 
     implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("dev.jorel:commandapi-bukkit-kotlin:9.7.0")
@@ -48,6 +53,13 @@ surfPaperPluginApi {
     authors.add("SLNE Development")
 
     generateLibraryLoader(false)
+    serverDependencies{
+        register("surf-gui-bukkit") {
+            load = PaperPluginDescription.RelativeLoadOrder.AFTER
+            required = true
+            joinClasspath = true
+        }
+    }
 }
 
 

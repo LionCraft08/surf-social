@@ -6,6 +6,8 @@ import dev.jorel.commandapi.executors.CommandArguments
 import dev.jorel.commandapi.executors.PlayerCommandExecutor
 import dev.slne.surf.friends.command.subcommand.*
 import dev.slne.surf.friends.menu.FriendMainMenu
+import dev.slne.surf.gui.menu.menu.MenuService
+import dev.slne.surf.gui.user.UserManager
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 
@@ -24,7 +26,8 @@ class FriendCommand(commandName: String) : CommandAPICommand(commandName) {
         withSubcommand(FriendRequestListCommand("requests"))
 
         executesPlayer(PlayerCommandExecutor { player: Player, _: CommandArguments? ->
-            FriendMainMenu().show(player)
+            MenuService.openMenu(UserManager[player.uniqueId], "friends:${player.uniqueId}")
+            //FriendMainMenu().show(player)
         })
     }
 }

@@ -16,7 +16,9 @@ import kotlinx.coroutines.withContext
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
 import org.bukkit.Bukkit
+import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
+import java.text.SimpleDateFormat
 import java.util.*
 
 object FriendManager {
@@ -75,6 +77,34 @@ object FriendManager {
                 .append(Component.text(getName(player), PluginColor.GOLD))
                 .append(Component.text("´s Freundesliste entfernt."))
         )
+    }
+    suspend fun tryFriendRequest(player: Player, target: OfflinePlayer): Boolean{
+        if (hasFriendRequest(player.uniqueId, target.uniqueId)) {
+            player.sendMessage(Component.text("Du hast bereits eine Freundschaftsanfrage von ${target.name}", PluginColor.RED))
+            return false
+        }
+
+        if (hasFriendRequest(target.uniqueId, player.uniqueId)) {
+            player.sendMessage(Component.text("Du hast bereits eine Freundschaftsanfrage an ${target.name} gesendet.", PluginColor.RED))
+            return false
+        }
+
+        if (areFriends(target.uniqueId, player.uniqueId)) {
+            player.sendMessage(Component.text("Du bist bereits mit ${target.name} befreundet.", PluginColor.RED))
+            return false
+        }
+
+        if (target == player) {
+            player.sendMessage(Component.text("Du kannst nicht mit dir selbst befreundet sein.", PluginColor.RED))
+            return false
+        }
+
+        if (!isAllowingRequests(target.uniqueId)) {
+            sendMessage(player.uniqueId, Component.text("${target.name} hat Freundschaftsanfragen deaktiviert. Sie wurde trotzdem geschickt, der Spieler hat aber keine Benachrichtigung bekommen!", PluginColor.RED))
+        }
+
+        sendFriendRequest(player.uniqueId, target.uniqueId)
+        return true
     }
 
     suspend fun sendFriendRequest(player: UUID, target: UUID) {
@@ -174,6 +204,19 @@ object FriendManager {
 
         return playerData.allowRequests
     }
+    suspend fun getFriendNote(player: UUID, target: UUID): String?{
+        return queryFriendData(player).friendNotes[target]
+    }
+    suspend fun setFriendNote(player: UUID, target: UUID, note: String?){
+        val playerData = queryFriendData(player)
+        playerData.friendNotes[target] = note
+        cache.put(player, playerData)
+    }
+    suspend fun removeFriendNote(player: UUID, target: UUID){
+        val playerData = queryFriendData(player)
+        playerData.friendNotes.remove(target)
+        cache.put(player, playerData)
+    }
 
     suspend fun isAllowingRequests(player: UUID): Boolean = queryFriendData(player).allowRequests
 
@@ -203,12 +246,22 @@ object FriendManager {
 
     suspend fun getOnlineFriends(player: UUID): ObjectList<Player> {
         // TODO: Cloud implementation
+        //FIXME Müsste hier ned ne uuid list abgefragt werden weil
         return ObjectArrayList()
     }
 
     suspend fun getServer(player: UUID): String {
         // TODO: Cloud implementation
         return "???"
+    }
+
+    suspend fun isOnline(player: UUID): Boolean?{
+        //TODO Cloud implementation
+        return null
+    }
+    suspend fun getLastSeen(player: UUID): Date{
+        return Date(Bukkit.getOfflinePlayer(player).lastSeen)
+        //TODO Should also be requested from Velocity via Cloud
     }
 
     suspend fun getFriends(player: UUID): ObjectSet<UUID> = queryFriendData(player).friends

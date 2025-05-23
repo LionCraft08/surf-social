@@ -1,5 +1,6 @@
 package dev.slne.surf.friends.database
 
+import com.google.gson.Gson
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import dev.slne.surf.friends.*
@@ -38,6 +39,7 @@ object Database {
             uuid VARCHAR(36) PRIMARY KEY,
             friends TEXT,
             friendrequests TEXT,
+            friendnotes TEXT,
             allowrequests boolean
             );
             
@@ -78,6 +80,7 @@ object Database {
                                 val friends: String = resultSet.getString("friends")
                                 val friendRequests: String = resultSet.getString("friendrequests")
                                 val allowRequests: Boolean = resultSet.getBoolean("allowrequests")
+                                val friendNotes: String = resultSet.getString("friendnotes")
 
                                 val friendsList = if (friends.isEmpty()) {
                                     ObjectArraySet()
@@ -93,9 +96,16 @@ object Database {
                                         .map { UUID.fromString(it.trim()) })
                                 }
 
+                                val friendNotesList = HashMap<UUID, String?>()
+                                if (!friendNotes.isEmpty()) {
+                                    val map = Gson().fromJson(friendNotes, HashMap::class.java) as HashMap<String, String>
+                                    map.forEach { (k, v) -> friendNotesList[UUID.fromString(k)] = v }
+                                }
+
                                 return@withContext FriendData(
                                     player,
                                     friendsList,
+                                    friendNotesList,
                                     friendRequestsList,
                                     allowRequests
                                 )
@@ -117,16 +127,18 @@ object Database {
 
     suspend fun saveFriendData(friendData: FriendData) {
         val query = """
-        INSERT INTO surffriends (uuid, friends, friendrequests, allowrequests)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO surffriends (uuid, friends, friendnotes, friendrequests, allowrequests)
+        VALUES (?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
         friends = VALUES(friends),
+        friendnotes = VALUES(friendnotes),
         friendrequests = VALUES(friendrequests),
         allowrequests = VALUES(allowrequests);
     """.trimIndent()
 
         val friends = friendData.friends.joinToString(",") { it.toString() }
         val friendRequests = friendData.friendRequests.joinToString(",") { it.toString() }
+        val friendNotes = Gson().toJson(friendData.friendNotes)
 
         withContext(Dispatchers.IO) {
             try {
@@ -136,8 +148,9 @@ object Database {
                     connection.prepareStatement(query).use { statement ->
                         statement.setString(1, friendData.player.toString())
                         statement.setString(2, friends)
-                        statement.setString(3, friendRequests)
-                        statement.setBoolean(4, friendData.allowRequests)
+                        statement.setString(3, friendNotes)
+                        statement.setString(4, friendRequests)
+                        statement.setBoolean(5, friendData.allowRequests)
                         statement.executeUpdate()
                     }
                 }

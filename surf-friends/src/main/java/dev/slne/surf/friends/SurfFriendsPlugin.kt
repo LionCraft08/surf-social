@@ -10,6 +10,10 @@ import dev.slne.surf.friends.database.Database
 import dev.slne.surf.friends.listener.PlayerJoinListener
 import dev.slne.surf.friends.listener.PlayerQuitListener
 import dev.slne.surf.friends.listener.util.PluginColor
+import dev.slne.surf.friends.surf_menu.FriendRequestsMenu
+import dev.slne.surf.friends.surf_menu.FriendsMenu
+import dev.slne.surf.friends.surf_menu.PlayerActionMenu
+import dev.slne.surf.gui.menu.menu.MenuService
 
 import kotlinx.coroutines.DelicateCoroutinesApi
 
@@ -32,6 +36,7 @@ class SurfFriendsPlugin : SuspendingJavaPlugin() {
 
         saveDefaultConfig()
         Database.createConnection()
+        registerUIs()
     }
 
     override suspend fun onDisableAsync() {
@@ -42,6 +47,12 @@ class SurfFriendsPlugin : SuspendingJavaPlugin() {
         FriendCommand("friend").register()
         FriendAddCommand("fa").register()
         FriendListCommand("fl").register()
+    }
+
+    private fun registerUIs(){
+        MenuService.registerNewMenu("player", PlayerActionMenu::class.java)
+        MenuService.registerNewMenu("friends", FriendsMenu::class.java)
+        MenuService.registerNewMenu("friends_requests", FriendRequestsMenu::class.java)
     }
 
     @OptIn(DelicateCoroutinesApi::class)

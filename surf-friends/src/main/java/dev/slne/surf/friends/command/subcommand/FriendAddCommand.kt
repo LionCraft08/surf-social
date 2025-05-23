@@ -29,33 +29,8 @@ class FriendAddCommand(name: String) : CommandAPICommand(name) {
 
         executesPlayer(PlayerCommandExecutor { player: Player, args: CommandArguments ->
             val target = args.getOfflinePlayerOrFail("target")
-
             plugin.launch {
-                if (FriendManager.hasFriendRequest(player.uniqueId, target.uniqueId)) {
-                    player.sendMessage(Component.text("Du hast bereits eine Freundschaftsanfrage von ${target.name}", PluginColor.RED))
-                    return@launch
-                }
-
-                if (FriendManager.hasFriendRequest(target.uniqueId, player.uniqueId)) {
-                    player.sendMessage(Component.text("Du hast bereits eine Freundschaftsanfrage an ${target.name} gesendet.", PluginColor.RED))
-                    return@launch
-                }
-
-                if (FriendManager.areFriends(target.uniqueId, player.uniqueId)) {
-                    player.sendMessage(Component.text("Du bist bereits mit ${target.name} befreundet.", PluginColor.RED))
-                    return@launch
-                }
-
-                if (target == player) {
-                    player.sendMessage(Component.text("Du kannst nicht mit dir selbst befreundet sein.", PluginColor.RED))
-                    return@launch
-                }
-
-                if (!FriendManager.isAllowingRequests(target.uniqueId)) {
-                    FriendManager.sendMessage(player.uniqueId, Component.text("${target.name} hat Freundschaftsanfragen deaktiviert. Sie wurde trotzdem geschickt, der Spieler hat aber keine Benachrichtigung bekommen!", PluginColor.RED))
-                }
-
-                FriendManager.sendFriendRequest(player.uniqueId, target.uniqueId)
+                FriendManager.tryFriendRequest(player, target)
             }
         })
     }
